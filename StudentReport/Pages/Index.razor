@@ -1,0 +1,145 @@
+﻿@page "/"
+
+@using StudentReport.Data
+@inject NavigationManager navigationManager
+@inject StudentService studentService
+
+<div class="container">
+    <div>
+        <table>
+            <tr>
+                <td style="width:10%">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" @onclick="(() => ClassClick())">Add Classes</button>
+                    </div>
+                </td>
+                <td style="width:10%">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" @onclick="(() => CountryClick())">Add Countries</button>
+                    </div>
+                </td>
+                <td style="width:10%">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" @onclick="(() => StudentClick())">Add Students</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br />
+    <div class="row bg-light">
+        <h2>Number of Students by Class</h2>
+        <table class="table table-bordered" style="border:1px">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Class Name</th>
+                    <th>Students Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (cls.Any())
+                {
+                    @foreach (var classe in cls)
+                    {
+                        <tr>
+                            <td>@classe.ClassName</td>
+                            <td>@classe.Students.Count()</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>No classes available</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <br />
+
+    <div class="row bg-light">
+        <h2>Number of Students by Country</h2>
+        <table class="table table-bordered" style="border:1px">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Country Name</th>
+                    <th>Students Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (cts.Any())
+                {
+                    @foreach (var countrie in cts)
+                    {
+                        <tr>
+                            <td>@countrie.CountryName</td>
+                            <td>@countrie.Students.Count()</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>No classes available</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <br />
+    <div class="row bg-light">
+        <h2>Average Age of Students :@AvgAge</h2>
+    </div>
+</div>
+
+@code {
+    public void ClassClick()
+    {
+        navigationManager.NavigateTo("/class");
+    }
+
+    public void CountryClick()
+    {
+        navigationManager.NavigateTo("/country");
+    }
+
+    public void StudentClick()
+    {
+        navigationManager.NavigateTo("/student");
+    }
+
+    List<Classes> cls = new List<Classes>();
+    List<Countries> cts = new List<Countries>();
+    Double AvgAge = 0.0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        GetStudentCountByClass();
+        GetStudentCountByCountry();
+        GetStudentsAverageAge();
+    }
+
+    private async Task GetStudentCountByClass()
+    {
+        cls = await studentService.GetStudentCountByClass();
+    }
+    private async Task GetStudentCountByCountry()
+    {
+        cts = await studentService.GetStudentCountByCountry();
+    }
+
+    private async void GetStudentsAverageAge()
+    {
+        List<Students> std = new List<Students>();
+        std = await studentService.GetStudentsAsync();
+        int sumAge = 0;
+        int counter = 0;
+
+        foreach (var s in std)
+        {
+            sumAge += new DateTime((DateTime.Now - Convert.ToDateTime(s.DOB.ToString())).Ticks).Year;
+            counter++;
+        }
+
+        AvgAge = sumAge / counter;
+    }
+}

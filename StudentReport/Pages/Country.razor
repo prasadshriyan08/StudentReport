@@ -1,0 +1,116 @@
+﻿@page "/country"
+
+@using StudentReport.Data
+@inject StudentReport.Data.StudentService studentService
+
+
+<div class="container">
+
+    <div class="row bg-light">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Country Id</th>
+                    <th>Country Name</th>
+                    <th>Delete Country</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (countries.Any())
+                {
+                    @foreach (var countrie in countries)
+                    {
+                        <tr @onclick="(() => SetCountryforupdate(countrie))">
+                            <td>@countrie.Id</td>
+                            <td>@countrie.CountryName</td>
+                            <td><button class="btn btn-danger" @onclick="(() => DeleteCountry(countrie))">Delete</button></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>No countries available</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row m-5">
+        <div class="col-5 bg-light m-2 justify-content-start">
+
+            <div class="p-3 mb-3 bg-primary text-white text-center">Add New Country</div>
+
+            <Microsoft.AspNetCore.Components.Forms.EditForm Model="@NewCountry">
+                <div class="form-group">
+                    <label for="name">Country Name</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@NewCountry.CountryName" />
+                </div>
+
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="AddNewCountry">Add Country</button>
+                </div>
+            </Microsoft.AspNetCore.Components.Forms.EditForm>
+        </div>
+
+        <div class="col-5 bg-light m-2 justify-content-end">
+
+            <div class="p-3 mb-3 bg-primary text-white text-center">Update Country</div>
+
+            <Microsoft.AspNetCore.Components.Forms.EditForm Model="@UpdateCountry">
+                <div class="form-group">
+                    <label for="name">Country Name</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@UpdateCountry.CountryName" />
+                </div>
+
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="UpdateCountryData"> Update Country</button>
+                </div>
+            </Microsoft.AspNetCore.Components.Forms.EditForm>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+@code {
+    List<Countries> countries = new List<Countries>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        RefreshCountryData();
+    }
+
+    private async Task RefreshCountryData()
+    {
+        countries = await studentService.GetCountriesAsync();
+    }
+
+    public Countries NewCountry { get; set; } = new Countries();
+
+    private async Task AddNewCountry()
+    {
+        await studentService.AddCountriesAsync(NewCountry);
+        NewCountry = new Countries();
+        await RefreshCountryData();
+    }
+
+    Countries UpdateCountry = new Countries();
+    private void SetCountryforupdate(Countries Country)
+    {
+        UpdateCountry = Country;
+    }
+
+    private async Task UpdateCountryData()
+    {
+        await studentService.UpdateCountriesAsync(UpdateCountry);
+        await RefreshCountryData();
+    }
+
+    private async Task DeleteCountry(Countries countries)
+    {
+        await studentService.DeleteCountriesAsync(countries);
+        await RefreshCountryData();
+    }
+}

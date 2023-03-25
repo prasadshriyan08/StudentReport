@@ -1,0 +1,153 @@
+﻿@page "/student"
+
+
+@using StudentReport.Data
+@inject StudentReport.Data.StudentService studentService
+
+
+<div class="container">
+
+    <div class="row bg-light">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Student Id</th>
+                    <th>Class Id</th>
+                    <th>Country Id</th>
+                    <th>Student Name</th>
+                    <th>Date of Birth</th>
+                    <th>Delete Student</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (students.Any())
+                {
+                    @foreach (var student in students)
+                    {
+                        <tr @onclick="(() => SetStudentforupdate(student))">
+                            <td>@student.Id</td>
+                            <td>@student.ClassId</td>
+                            <td>@student.CountryId</td>
+                            <td>@student.Name</td>
+                            <td>@student.DOB</td>
+                            <td><button class="btn btn-danger" @onclick="(() => DeleteStudent(student))">Delete</button></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>No students available</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row m-5">
+        <div class="col-5 bg-light m-2 justify-content-start">
+
+            <div class="p-3 mb-3 bg-primary text-white text-center">Add New Student</div>
+
+            <Microsoft.AspNetCore.Components.Forms.EditForm Model="@NewStudent">
+                <div class="form-group">
+                    <label for="name">Class Id</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@NewStudent.ClassId" />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Country Id</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@NewStudent.CountryId" />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Student Name</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@NewStudent.Name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Date Of Birth</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@NewStudent.DOB" />
+                </div>
+
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="AddNewStudent">Add Student</button>
+                </div>
+            </Microsoft.AspNetCore.Components.Forms.EditForm>
+        </div>
+
+        <div class="col-5 bg-light m-2 justify-content-end">
+
+            <div class="p-3 mb-3 bg-primary text-white text-center">Update Student</div>
+
+            <Microsoft.AspNetCore.Components.Forms.EditForm Model="@UpdateStudent">
+                <div class="form-group">
+                    <label for="name">Class Id</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@UpdateStudent.ClassId" />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Country Id</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@UpdateStudent.CountryId" />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Student Name</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@UpdateStudent.Name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Date Of Birth</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@UpdateStudent.DOB" />
+                </div>
+
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="UpdateStudentData"> Update Student</button>
+                </div>
+            </Microsoft.AspNetCore.Components.Forms.EditForm>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+@code {
+    List<Students> students = new List<Students>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        RefreshStudentData();
+    }
+
+    private async Task RefreshStudentData()
+    {
+        students = await studentService.GetStudentsAsync();
+    }
+
+    public Students NewStudent { get; set; } = new Students();
+
+    private async Task AddNewStudent()
+    {
+        await studentService.AddStudentsAsync(NewStudent);
+        NewStudent = new Students();
+        await RefreshStudentData();
+    }
+
+    Students UpdateStudent = new Students();
+    private void SetStudentforupdate(Students Student)
+    {
+        UpdateStudent = Student;
+    }
+
+    private async Task UpdateStudentData()
+    {
+        await studentService.UpdateStudentsAsync(UpdateStudent);
+        await RefreshStudentData();
+    }
+
+    private async Task DeleteStudent(Students student)
+    {
+        await studentService.DeleteStudentsAsync(student);
+        await RefreshStudentData();
+    }
+}
